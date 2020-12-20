@@ -62,21 +62,24 @@ void setup() {
 }
 
 void loop() {
+  int time_start = micros();
   for (byte r = 0; r < ROW_SIZE; ++r) {
     digitalWrite(rows[r], LOW);
     delayMicroseconds(5);
     
     for (byte c = 0; c < COL_SIZE; ++c) { //traverse cols
       if (digitalRead(cols[c]) == LOW) {
-        keyPress(r, c);
+        if (!matrixState[r][c])
+          keyPress(r, c);
       } else if (matrixState[r][c]) {
         keyRelease(r, c);
       }
     }
-    
     digitalWrite(rows[r], HIGH);
     delayMicroseconds(5);
   }
+  int time_end = micros();
+  Serial.println(time_end - time_start);
 }
 
 void keyPress(int r, int c) {
