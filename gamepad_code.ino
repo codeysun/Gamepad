@@ -22,8 +22,8 @@
 #define C4 15
 #define C5 14
 
-#define MOD_ROW R3
-#define MOD_COL C0
+#define MOD_ROW 2
+#define MOD_COL 0
 
 // Matrix
 byte cols[] = {C0, C1, C2, C3, C4, C5};
@@ -31,7 +31,7 @@ byte rows[] = {R0, R1, R2, R3, R4};
 char matrix[ROW_SIZE][COL_SIZE] = {
   {KEY_ESC, '1', '2', '3', '4', '5'},
   {KEY_TAB, 'q', 'w', 'e', 'r', 't'},
-  {0 , 'a', 's', 'd', 'f', 'g'},
+  {0, 'a', 's', 'd', 'f', 'g'},
   {KEY_LEFT_SHIFT, 'z', 'x', 'c', 'v', 'b'},
   {0, 0, 0, KEY_LEFT_CTRL, KEY_LEFT_ALT, ' '}
 };
@@ -40,7 +40,7 @@ char matrixMod[ROW_SIZE][COL_SIZE] = { //modifier key
   {KEY_TAB, 'q', 'w', KEY_UP_ARROW, 'r', 'y'},
   {0 , 'a', KEY_LEFT_ARROW, KEY_DOWN_ARROW, KEY_RIGHT_ARROW, 'h'},
   {KEY_LEFT_SHIFT, 'z', 'x', 'c', 'v', 'b'},
-  {0, 0, 0, ',', '.', ' '}
+  {0, 0, 0, ',', '.', KEY_BACKSPACE}
 };
 bool matrixState[ROW_SIZE][COL_SIZE] = {0}; // 1 is pressed, 0 if not
 
@@ -58,11 +58,9 @@ void setup() {
   }
   Serial.begin(9600);
   Keyboard.begin();
-  Serial.println("Running");
 }
 
 void loop() {
-  int time_start = micros();
   for (byte r = 0; r < ROW_SIZE; ++r) {
     digitalWrite(rows[r], LOW);
     delayMicroseconds(5);
@@ -78,12 +76,12 @@ void loop() {
     digitalWrite(rows[r], HIGH);
     delayMicroseconds(5);
   }
-  int time_end = micros();
-  Serial.println(time_end - time_start);
 }
 
-void keyPress(int r, int c) {
-  if (matrixState[MOD_ROW][MOD_COL]) {
+void keyPress(byte r, byte c) {
+  if (r == MOD_ROW && c == MOD_COL) {
+    Keyboard.releaseAll();
+  } else if (matrixState[MOD_ROW][MOD_COL]) {
     Keyboard.press(matrixMod[r][c]);
   } else {
     Keyboard.press(matrix[r][c]);
@@ -91,7 +89,7 @@ void keyPress(int r, int c) {
   matrixState[r][c] = 1;
 }
 
-void keyRelease(int r, int c) {
+void keyRelease(byte r, byte c) {
   if (r == MOD_ROW && c == MOD_COL) {
     Keyboard.releaseAll();
   } else if (matrixState[MOD_ROW][MOD_COL]) {
