@@ -149,7 +149,6 @@ ISR(TIMER1_COMPA_vect) // matrixScan
 
 void keyPress(byte r, byte c) {
   if (r == MOD_ROW && c == MOD_COL) {
-    Keyboard.releaseAll();
   } else if (matrixState[MOD_ROW][MOD_COL]) {
     Keyboard.press(matrixMod[r][c]);
   } else {
@@ -161,10 +160,8 @@ void keyPress(byte r, byte c) {
 
 void keyRelease(byte r, byte c) {
   if (r == MOD_ROW && c == MOD_COL) {
-    Keyboard.releaseAll();
-  } else if (matrixState[MOD_ROW][MOD_COL]) {
-    Keyboard.release(matrixMod[r][c]);
   } else {
+    Keyboard.release(matrixMod[r][c]);
     Keyboard.release(matrix[r][c]);
   }
   matrixState[r][c] = 0;
