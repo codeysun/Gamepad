@@ -73,12 +73,12 @@ const char matrix[ROW_SIZE][COL_SIZE] = {
 const char matrixMod[ROW_SIZE][COL_SIZE] = { //modifier key
   {KEY_ESC, KEY_F1, KEY_F2, KEY_F3, KEY_F4, KEY_F5},
   {KEY_TAB, 'q', 'w', KEY_UP_ARROW, 'y', 'u'},
-  {0 , 'a', KEY_LEFT_ARROW, KEY_DOWN_ARROW, 'h', 'j'},
+  {0 , 'a', KEY_LEFT_ARROW, KEY_DOWN_ARROW, KEY_RIGHT_ARROW, 'j'},
   {KEY_LEFT_SHIFT, 'z', 'x', 'c', 'n', 'm'},
   {0, 0, 0, ',', '.', KEY_BACKSPACE}
 };
 bool matrixState[ROW_SIZE][COL_SIZE] = {0}; // 1 is pressed, 0 if not
-bool pressFlag = 0; // trigger popCat when key is pressed
+volatile bool pressFlag = 0; // trigger popCat when key is pressed
 
 void setup() {
   Serial.begin(9600);
@@ -92,13 +92,13 @@ void setup() {
 }
 
 void loop() {
-  if (pressFlag) {
-    pressFlag = 0;
-    display.clearDisplay();
-    display.drawBitmap(0, 0, popCat2, 43, 32, SSD1306_WHITE);
-    display.display();
-    delay(80);
-  }
+  while (!pressFlag);
+  pressFlag = 0;
+  display.clearDisplay();
+  display.drawBitmap(0, 0, popCat2, 43, 32, SSD1306_WHITE);
+  display.display();
+  delay(80);
+    
   display.clearDisplay();
   display.drawBitmap(0, 0, popCat1, 43, 32, SSD1306_WHITE);
   display.display();
