@@ -82,7 +82,6 @@ bool pressFlag = 0; // trigger popCat when key is pressed
 
 void setup() {
   Serial.begin(9600);
-  while (!Serial); // Leonardo: wait for serial monitor
   Keyboard.begin();
   if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3C for 128x32
     Serial.println(F("SSD1306 allocation failed"));
