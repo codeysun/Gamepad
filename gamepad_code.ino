@@ -41,6 +41,10 @@ const unsigned char popCat2 [] PROGMEM = {
   0x01, 0xc0, 0xff, 0xcf, 0xc7, 0xfe, 0x1e, 0x00, 0xf8, 0x38, 0x21, 0xfc, 0x20, 0x00, 0xff, 0xc0, 
   0x10, 0x78, 0x40, 0x00, 0x00, 0x00, 0x0e, 0x01, 0x80, 0x00, 0x00, 0x00, 0x01, 0xfe, 0x00, 0x00
 };
+// 'snow flake', 3x3px
+const unsigned char flake [] PROGMEM = {
+  0x40, 0xa0, 0x40
+};
 
 // matrix settings
 #define ROW_SIZE 5
@@ -77,11 +81,18 @@ const char matrixMod[ROW_SIZE][COL_SIZE] = { //modifier key
   {KEY_LEFT_SHIFT, 'z', 'x', 'c', 'n', 'm'},
   {0, 0, 0, ',', '.', KEY_BACKSPACE}
 };
+
 bool matrixState[ROW_SIZE][COL_SIZE] = {0}; // 1 is pressed, 0 if not
-volatile bool pressFlag = 0; // trigger popCat when key is pressed
+volatile byte pressFlag = 0;
+volatile byte pressFlag2 = 0;
+#define POPTIME 2 // in frames
+
+#define NUMFLAKES 20
+byte flakes[NUMFLAKES][3]; // snowflakes array
 
 void setup() {
   Serial.begin(9600);
+  //while (!Serial); // Leonardo: wait for serial monitor
   Keyboard.begin();
   if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3C for 128x32
     Serial.println(F("SSD1306 allocation failed"));
@@ -89,20 +100,53 @@ void setup() {
   }
   display.clearDisplay();
   matrixInit();
+  snowInit();
 }
 
 void loop() {
-  while (!pressFlag);
-  pressFlag = 0;
   display.clearDisplay();
-  display.drawBitmap(0, 0, popCat2, 43, 32, SSD1306_WHITE);
-  display.display();
-  delay(80);
-    
-  display.clearDisplay();
-  display.drawBitmap(0, 0, popCat1, 43, 32, SSD1306_WHITE);
-  display.display();
-  delay(80);
+  drawPopcat();
+  drawSnow();
+  display.display(); // one loop takes ~50ms
+  delay(16);
+}
+
+void drawPopcat() {
+  if (pressFlag > 0){
+    if (pressFlag2 > 0) {
+      display.drawBitmap(0, 0, popCat2, 43, 32, SSD1306_WHITE);
+      pressFlag2--;
+    } else {
+      display.drawBitmap(0, 0, popCat1, 43, 32, SSD1306_WHITE);
+      pressFlag--;
+    }
+  } else {
+    display.drawBitmap(0, 0, popCat1, 43, 32, SSD1306_WHITE);
+  }
+}
+
+void snowInit() {
+  for (byte i = 0; i < NUMFLAKES; ++i) {
+    flakes[i][0]   = random(display.width(), 2 * display.width()); // XPOS
+    flakes[i][1]   = random(1 - 3, display.height()); // YPOS
+    flakes[i][2] = random(1, 2); // SPEED
+  }
+}
+
+void drawSnow() {
+  for (byte i = 0; i < NUMFLAKES; ++i) { // draw each snowflake
+    display.drawBitmap(flakes[i][0], flakes[i][1], flake, 3, 3, SSD1306_WHITE);
+  }
+  for (byte i = 0; i < NUMFLAKES; ++i) { // update snowflake coordinates
+    flakes[i][0] -= flakes[i][2];
+      // If snowflake is off the bottom of the screen...
+    if (flakes[i][0] <= 0) {
+      // Reinitialize to a random position, just off the top
+      flakes[i][0]   = display.width(); // XPOS
+      flakes[i][1]   = random(1 - 3, display.height()); // YPOS
+      flakes[i][2] = random(1, 2); // SPEED
+    }
+  }
 }
 
 void matrixInit() {
@@ -154,7 +198,9 @@ void keyPress(byte r, byte c) {
   } else {
     Keyboard.press(matrix[r][c]);
   }
-  pressFlag = 1;
+  if (pressFlag == 0) {
+    pressFlag = pressFlag2 = POPTIME;
+  }
   matrixState[r][c] = 1;
 }
 
