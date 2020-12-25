@@ -85,7 +85,7 @@ const char matrixMod[ROW_SIZE][COL_SIZE] = { //modifier key
 bool matrixState[ROW_SIZE][COL_SIZE] = {0}; // 1 is pressed, 0 if not
 volatile byte pressFlag = 0;
 volatile byte pressFlag2 = 0;
-#define POPTIME 2 // in frames
+#define POPTIME 1 // in frames
 
 #define NUMFLAKES 20
 byte flakes[NUMFLAKES][3]; // snowflakes array
@@ -105,15 +105,15 @@ void setup() {
 
 void loop() {
   display.clearDisplay();
-  drawPopcat();
   drawSnow();
+  drawPopcat();
   display.display(); // one loop takes ~50ms
-  delay(16);
+  delay(80);
 }
 
 void drawPopcat() {
-  if (pressFlag > 0){
-    if (pressFlag2 > 0) {
+  if (pressFlag){
+    if (pressFlag2) {
       display.drawBitmap(0, 0, popCat2, 43, 32, SSD1306_WHITE);
       pressFlag2--;
     } else {
